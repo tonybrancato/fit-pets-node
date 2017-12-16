@@ -24,11 +24,18 @@ const PetsSchema = mongoose.Schema({
         type: String, 
         required: true
     },
-    weight: [{
-        type: Number,
+    weight: {
+        type: Array,
         required: true
-    }]
+    }
 });
+
+PetsSchema.virtual('latestWeight').get(function() {
+    if (`${this.weight.length}` > 1) {
+      return `${this.weight.slice(-1)}`;
+    }
+    else 
+    return `${this.weight}`});
 
 PetsSchema.methods.apiRepr = function() {
     return {
@@ -36,7 +43,7 @@ PetsSchema.methods.apiRepr = function() {
         species: this.species || '',
         sex: this.sex || '',
         birthday: this.birthday || '',
-        weight: this.weight || '',
+        lastWeight: this.latestWeight,
     };
 };
 
