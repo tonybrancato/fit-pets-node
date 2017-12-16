@@ -1,3 +1,5 @@
+// import { read } from 'fs';
+
 const express = require('express');
 const bodyParser = require('body-parser');
 const morgan = require('morgan');
@@ -12,10 +14,9 @@ const jsonParser = bodyParser.json();
 // ES6 promises for mongoose
 mongoose.Promise = global.Promise;
 
-// GET
+// GET -- Take out of final code or make for server level admin
 router.get('/', (req, res) => {
   console.log(req.user.id);
-  console.log(req.params)
   Pet
     .find()
     .then(pets => {
@@ -30,15 +31,16 @@ router.get('/', (req, res) => {
         res.status(500).json({message: 'Internal server error'});
     });
 });
-
-router.get('/:owner', (req, res) => {
+// GET pets by owner
+router.get('/:_owner', (req, res) => {
+  console.log(req.params._owner);
+  console.log('req.params._owner = ' + req.params._owner)  
   Pet
-  console.log('req.params.owner = ' + req.params.owner)
-    .find({'name' : req.params.owner})
+    .find({'_owner' : req.params._owner})
     .then(pets => {
       res.json({
         pets: pets.map(
-          (pet) => pet.apiRepr())
+          (pet) => pet.apiRepr()) 
       });
     })
     .catch(err => {
@@ -76,7 +78,40 @@ Pet
   console.log(req.body);
 });
 // PUT *make sure that the pet id belongs to the user
+router.put('/:id', jsonParser, (req, res) => {
+  if (req.params.id !== req.body.id) {
+    const msg = (
+      `*****request path id (${req.params.id}) and request body id
+      (${req.body.id}) must match*****`);
+    // console.error(message + '-----req.body is ' + JSON.stringify(req.body.id));
+    res.status(400).json({message: msg});
+  }
+  
+  const toUpdate = {};
+  const updatableFields = ['weight'];
+  updatableFields.forEach(field => {
+    if (field in req.body) {
+      toUpdate[field] = req.body[field];
+    }
+  });
+ 
+  Pet
+    .findOneAndUpdate({'_id':req.params.id, '_owner':req.user.id}, {$push: toUpdate})
+    .then(pet => res.status(204).end())
+    .catch(err => res.status(500).json({message: 'Internal server error'}));
+ });
 
-// DELETE *see PUT for user/pet validation
-
+// DELETE
+  // add logic for pet not found
+router.delete('/:id', (req, res) => {
+  console.log(req.user.id);
+  Pet
+    .findOneAndRemove({'_id':req.params.id, '_owner':req.user.id}, () => {
+      if (req.user.id != '_owner') {
+        res.status(401).json({message: 'You are not authorized to complete this action.'})
+      }
+    })
+    .then(pet => res.status(204).end())
+    .catch(err => res.status(500).json({message: 'Internal server error'}));
+});
 module.exports = {router};
