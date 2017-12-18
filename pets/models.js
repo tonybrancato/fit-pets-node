@@ -37,12 +37,20 @@ PetsSchema.virtual('latestWeight').get(function() {
     else 
     return `${this.weight}`});
 
+PetsSchema.virtual('startingWeight').get(function() {
+    if (`${this.weight.length}` > 1) {
+        return `${this.weight[0]}`;
+    }
+    else 
+    return `${this.weight}`});
+
 PetsSchema.methods.apiRepr = function() {
     return {
         name: this.name || '',
         species: this.species || '',
         sex: this.sex || '',
         birthday: this.birthday || '',
+        startingWeight: this.startingWeight,
         lastWeight: this.latestWeight,
     };
 };
