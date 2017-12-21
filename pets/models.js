@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 
 mongoose.Promise = global.Promise;
+const moment = require('moment');
 
 const PetsSchema = mongoose.Schema({
     _owner : { 
@@ -27,6 +28,10 @@ const PetsSchema = mongoose.Schema({
     weight: {
         type: Array,
         required: true
+    },
+    weightDate: {
+        type: Array,
+        required: true
     }
 });
 
@@ -50,6 +55,7 @@ PetsSchema.methods.apiRepr = function() {
         species: this.species || '',
         sex: this.sex || '',
         birthday: this.birthday || '',
+        weight: this.weight,
         startingWeight: this.startingWeight,
         lastWeight: this.latestWeight,
     };

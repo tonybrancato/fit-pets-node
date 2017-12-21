@@ -3,9 +3,10 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const morgan = require('morgan');
 const mongoose = require('mongoose')
+const moment = require('moment');
 
 const {Pet} = require('./models');
-
+console.log(moment.utc().format("L"))
 const router = express.Router();
 
 const jsonParser = bodyParser.json();
@@ -67,7 +68,9 @@ Pet
     species: req.body.species,
     sex: req.body.sex,
     birthday: req.body.birthday,
-    weight: req.body.weight})
+    weight: req.body.weight,
+    weightDate: moment.utc().format('l')
+  })
   .then(
     pet => res.status(201).json(pet.apiRepr()))
   .catch(err => {
@@ -76,6 +79,7 @@ Pet
   });
   console.log(req.body);
 });
+
 // PUT *make sure that the pet id belongs to the user
 router.put('/:id', jsonParser, (req, res) => {
   if (req.params.id !== req.body.id) {
@@ -87,7 +91,7 @@ router.put('/:id', jsonParser, (req, res) => {
   }
   
   const toUpdate = {};
-  const updatableFields = ['weight'];
+  const updatableFields = ['weight', 'weightDate'];
   updatableFields.forEach(field => {
     if (field in req.body) {
       toUpdate[field] = req.body[field];
@@ -95,7 +99,7 @@ router.put('/:id', jsonParser, (req, res) => {
   });
  
   Pet
-    .findOneAndUpdate({'_id':req.params.id, '_owner':req.user.id}, {$push: toUpdate})
+    .findOneAndUpdate({'_id':req.params.id, '_owner':req.user.id}, {$push: toUpdate, weightDate: moment.utc()})
     .then(pet => res.status(204).end())
     .catch(err => res.status(500).json({message: 'Internal server error'}));
  });
