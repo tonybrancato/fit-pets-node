@@ -35,30 +35,50 @@ const PetsSchema = mongoose.Schema({
     }
 });
 
+PetsSchema.virtual('age').get(function() {
+	const now = moment();
+	const birthday = moment(this.birthday);
+	const age = now.diff(birthday, 'months');
+	if (age < 1) {
+		const ageDays = now.diff(birthday, 'days');
+		return `${ageDays} day`
+	}
+	if (age >= 12) {
+		const ageYears = now.diff(birthday, 'years');
+		return `${ageYears} year`
+	}
+	else 
+	return `${age} month`
+});
+
 PetsSchema.virtual('latestWeight').get(function() {
-    if (`${this.weight.length}` > 1) {
-      return `${this.weight.slice(-1)}`;
-    }
-    else 
-    return `${this.weight}`});
+	if (`${this.weight.length}` > 1) {
+		return `${this.weight.slice(-1)}`;
+	}
+	else 
+	return `${this.weight}`
+});
 
 PetsSchema.virtual('startingWeight').get(function() {
-    if (`${this.weight.length}` > 1) {
-        return `${this.weight[0]}`;
-    }
-    else 
-    return `${this.weight}`});
+	if (`${this.weight.length}` > 1) {
+			return `${this.weight[0]}`;
+	}
+	else 
+	return `${this.weight}`
+});
 
 PetsSchema.methods.apiRepr = function() {
-    return {
-        name: this.name || '',
-        species: this.species || '',
-        sex: this.sex || '',
-        birthday: this.birthday || '',
-        weight: this.weight,
-        startingWeight: this.startingWeight,
-        lastWeight: this.latestWeight,
-    };
+	return {
+		name: this.name || '',
+		species: this.species || '',
+		sex: this.sex || '',
+		birthday: this.birthday || '',
+		age: this.age,
+		weight: this.weight,
+		weightDate: this.weightDate,
+		startingWeight: this.startingWeight,
+		lastWeight: this.latestWeight,
+	};
 };
 
 
