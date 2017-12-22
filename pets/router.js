@@ -70,6 +70,10 @@ Pet
     birthday: req.body.birthday,
     weight: req.body.weight,
     weightDate: moment.utc().format('l')
+    // weights: {
+    //   weight: req.body.weight,
+    //   weightDate: moment.utc().format('l')
+    // }
   })
   .then(
     pet => res.status(201).json(pet.apiRepr()))
@@ -96,12 +100,14 @@ router.put('/:id', jsonParser, (req, res) => {
     if (field in req.body) {
       toUpdate[field] = req.body[field];
     }
-    console.log(toUpdate)  
+    console.log(toUpdate)
+    // console.log(`${toUpdate}  req.params.id === ${req.params.id} owner === ${req.user.id} `)  
   });
  
   Pet
     .findOneAndUpdate({'_id':req.params.id, '_owner':req.user.id}, {$push: toUpdate})     
     .findOneAndUpdate({'_id':req.params.id, '_owner':req.user.id}, {$push: {weightDate: moment.utc().format('L')}})
+    // .findOneAndUpdate({'_id':req.params.id, '_owner':req.user.id}, {$push: {toUpdate}})
     .then(pet => res.status(204).end())
     .catch(err => res.status(500).json({message: 'Internal server error'}));
  });

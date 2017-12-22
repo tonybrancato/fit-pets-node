@@ -25,14 +25,21 @@ const PetsSchema = mongoose.Schema({
         type: String, 
         required: true
     },
-    weight: {
-        type: Array,
-        required: true
-    },
+		// weights: [{
+		// 	weight: String,
+		// 	weightDate: String,
+		// }],
+		weight: {
+			type: Array,
+			required: true
+		},
     weightDate: {
         type: Array,
         required: true
-    }
+		},
+		tricks: {
+			type: Array
+		}
 });
 
 PetsSchema.virtual('age').get(function() {
@@ -78,6 +85,7 @@ PetsSchema.methods.apiRepr = function() {
 		weightDate: this.weightDate,
 		startingWeight: this.startingWeight,
 		lastWeight: this.latestWeight,
+		tricks: this.tricks
 	};
 };
 
