@@ -96,10 +96,12 @@ router.put('/:id', jsonParser, (req, res) => {
     if (field in req.body) {
       toUpdate[field] = req.body[field];
     }
+    console.log(toUpdate)  
   });
  
   Pet
-    .findOneAndUpdate({'_id':req.params.id, '_owner':req.user.id}, {$push: toUpdate, weightDate: moment.utc()})
+    .findOneAndUpdate({'_id':req.params.id, '_owner':req.user.id}, {$push: toUpdate})     
+    .findOneAndUpdate({'_id':req.params.id, '_owner':req.user.id}, {$push: {weightDate: moment.utc().format('L')}})
     .then(pet => res.status(204).end())
     .catch(err => res.status(500).json({message: 'Internal server error'}));
  });
