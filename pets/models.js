@@ -39,8 +39,19 @@ const PetsSchema = mongoose.Schema({
 		},
 		tricks: {
 			type: Array
+		},
+		commands: {
+			type: Array
+		},
+		commandDate: {
+			type: Array
 		}
 });
+
+PetsSchema.virtual('capitalName').get(function() {
+	const name = this.name.toLowerCase();
+	return name.charAt(0).toUpperCase() + name.slice(1);
+})
 
 PetsSchema.virtual('age').get(function() {
 	const now = moment();
@@ -76,16 +87,18 @@ PetsSchema.virtual('startingWeight').get(function() {
 
 PetsSchema.methods.apiRepr = function() {
 	return {
-		name: this.name || '',
+		name: this.capitalName || '',
 		species: this.species || '',
 		sex: this.sex || '',
 		birthday: this.birthday || '',
 		age: this.age,
+		id: this._id,
 		weight: this.weight,
 		weightDate: this.weightDate,
 		startingWeight: this.startingWeight,
 		lastWeight: this.latestWeight,
-		tricks: this.tricks
+		commands: this.commands,
+		commandDates: this.commandDate,
 	};
 };
 
