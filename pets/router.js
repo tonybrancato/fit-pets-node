@@ -69,7 +69,7 @@ Pet
     sex: req.body.sex,
     birthday: req.body.birthday,
     weight: req.body.weight,
-    weightDate: moment.utc().format('l')
+    weightDate: moment.utc().format('l'),
     // weights: {
     //   weight: req.body.weight,
     //   weightDate: moment.utc().format('l')
@@ -85,8 +85,10 @@ Pet
 });
 
 // PUT *make sure that the pet id belongs to the user
-router.put('/:id', jsonParser, (req, res) => {
-  if (req.params.id !== req.body.id) {
+
+// Weight update
+router.put('/weight/:id', jsonParser, (req, res) => {
+  if (req.params.id !== req.body.petId) {
     const msg = (
       `*****request path id (${req.params.id}) and request body id
       (${req.body.id}) must match*****`);
@@ -112,6 +114,35 @@ router.put('/:id', jsonParser, (req, res) => {
     .catch(err => res.status(500).json({message: 'Internal server error'}));
  });
 
+ // Commands Update
+//  router.put('/commands/:id', jsonParser, (req, res) => {
+//   if (req.params.id !== req.body.id) {
+//     const msg = (
+//       `*****request path id (${req.params.id}) and request body id
+//       (${req.body.id}) must match*****`);
+//     // console.error(message + '-----req.body is ' + JSON.stringify(req.body.id));
+//     res.status(400).json({message: msg});
+//   }
+  
+//   const toUpdate = {};
+//   const updatableFields = ['commands', 'commandDate'];
+//   updatableFields.forEach(field => {
+//     if (field in req.body) {
+//       toUpdate[field] = req.body[field];
+//     }
+//     console.log(toUpdate)
+//     // console.log(`${toUpdate}  req.params.id === ${req.params.id} owner === ${req.user.id} `)  
+//   });
+ 
+//   Pet
+//     .findOneAndUpdate({'_id':req.params.id, '_owner':req.user.id}, {$push: toUpdate})     
+//     .findOneAndUpdate({'_id':req.params.id, '_owner':req.user.id}, {$push: {commandDate: moment.utc().format('L')}})
+//     // .findOneAndUpdate({'_id':req.params.id, '_owner':req.user.id}, {$push: {toUpdate}})
+//     .then(pet => res.status(204).end())
+//     .catch(err => res.status(500).json({message: 'Internal server error'}));
+//  });
+
+ 
 // DELETE
   // add logic for pet not found
 router.delete('/:id', (req, res) => {
