@@ -69,6 +69,24 @@ PetsSchema.virtual('age').get(function() {
 	return `${age} month`
 });
 
+PetsSchema.virtual('recentWeights').get(function() {
+	if (`${this.weight.length}` > 5) {
+		const recentWeights = this.weight.slice(-5);
+		return recentWeights
+	}	
+	else
+	return `${this.weight}`
+});
+
+PetsSchema.virtual('recentWeightDates').get(function() {
+	if (`${this.weightDate.length}` > 5) {
+		const recentWeightDates = this.weightDate.slice(-5);
+		return recentWeightDates
+	}	
+	else
+	return `${this.weightDate}`
+});
+
 PetsSchema.virtual('latestWeight').get(function() {
 	if (`${this.weight.length}` > 1) {
 		return `${this.weight.slice(-1)}`;
@@ -99,6 +117,8 @@ PetsSchema.methods.apiRepr = function() {
 		lastWeight: this.latestWeight,
 		commands: this.commands,
 		commandDates: this.commandDate,
+		recentWeights: this.recentWeights,
+		recentWeightDates: this.recentWeightDates,
 	};
 };
 
