@@ -45,7 +45,7 @@ app.use('/api/pets/',
     passport.authenticate('jwt', {session: false}),
     petsRouter);
 app.use('/api/auth/', authRouter);
-
+app.use('/api/test/', petsRouter);
 // A protected endpoint which needs a valid JWT to access it
 app.get(
     '/api/protected',
