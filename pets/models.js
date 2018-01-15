@@ -1,9 +1,10 @@
 const mongoose = require('mongoose');
-
-mongoose.Promise = global.Promise;
 const moment = require('moment');
 
+mongoose.Promise = global.Promise;
+
 const PetsSchema = mongoose.Schema({
+
     _owner : { 
         type: String, 
         ref: 'User',
@@ -25,27 +26,21 @@ const PetsSchema = mongoose.Schema({
         type: String, 
         required: true
     },
-		// weights: [{
-		// 	weight: String,
-		// 	weightDate: String,
-		// }],
-		weight: {
-			type: Array,
-			required: true
-		},
+	weight: {
+		type: Array,
+		required: true
+	},
     weightDate: {
         type: Array,
         required: true
 		},
-		tricks: {
-			type: Array
-		},
-		commands: {
-			type: Array
-		},
-		commandDate: {
-			type: Array
-		}
+	foodBrand: {
+		type: String,
+		required: true
+	},
+	foodAmount: {
+		type: Number
+	}
 });
 
 PetsSchema.virtual('capitalName').get(function() {
@@ -114,11 +109,7 @@ PetsSchema.methods.apiRepr = function() {
 		weight: this.weight,
 		weightDate: this.weightDate,
 		startingWeight: this.startingWeight,
-		lastWeight: this.latestWeight,
-		commands: this.commands,
-		commandDates: this.commandDate,
-		recentWeights: this.recentWeights,
-		recentWeightDates: this.recentWeightDates,
+		foodBrand: this.foodBrand,
 	};
 };
 
