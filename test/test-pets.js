@@ -1,19 +1,19 @@
 global.DATABASE_URL = 'mongodb://localhost/jwt-auth-demo-test';
 const chai = require('chai');
 const chaiHttp = require('chai-http');
+chai.use(chaiHttp);
 const jwt = require('jsonwebtoken');
 const moment = require('moment');
 const {Pet} = require('../pets/models');
 const faker = require('faker');
 const mongoose = require('mongoose');
-
 const {app, runServer, closeServer} = require('../server');
 const {User} = require('../users');
 const {JWT_SECRET} = require('../config');
 const {TEST_DATABASE_URL} = require('../config');
 const should = chai.should();
 const expect = chai.expect;
-chai.use(chaiHttp);
+
 
 
 function pickOneOfThese (a, b) {
@@ -26,15 +26,15 @@ function pickOneOfThese (a, b) {
 }
 
 function randomWeight () {
-  return  Math.floor(Math.random()*100);
+  return  (Math.floor(Math.random()*100)).toString();
 }
 
-function seedPetData() {
+function seedPetData(owner) {
   console.info('seeding pet data');
   const seedData = [];
 
   for (let i=1; i<=10; i++) {
-    seedData.push(generatePets());
+    seedData.push(generatePets(owner));
   }
   // this will return a promise
   return Pet.insertMany(seedData);
@@ -45,27 +45,34 @@ function tearDownDb() {
     return mongoose.connection.dropDatabase();
 }
 
-function generatePets() {
+function generatePets(owner) {
   return {
-    _owner: '123456789',
+    _owner: owner,
     name: faker.name.firstName(),
     species: pickOneOfThese('Cat', 'Dog'),
     sex: pickOneOfThese('Male', 'Female'),
     birthday: moment.utc().format('L'),
-    weight: randomWeight(),
-    weightDate: moment.utc().format('L'),
+    weight: [randomWeight()],
+    weightDate: [moment.utc().format('L')],
     foodBrand: faker.commerce.productName(),
   }
 }
 
 describe('Fit Pets API resource', function() {
+  // create user and JWT to be used in pet creation
+  const username = 'exampleUser';
+  const password = 'examplePass';
+  const firstName = 'Example';
+  const lastName = 'User';
 
   before(function() {
     return runServer(TEST_DATABASE_URL);
   });
 
   beforeEach(function() {
-    return seedPetData();
+    return User.hashPassword(password)
+      .then(password => User.create({username, password, firstName, lastName}))
+      .then(seedPetData(username))
   });
 
   afterEach(function() {
@@ -76,16 +83,30 @@ describe('Fit Pets API resource', function() {
     return closeServer();
   })
 
-  it('should show a 200 status', function() {
+  it('should retrieve pets of a logged in user', function() {
+    const token = jwt.sign(
+      {
+          user: {
+              username,
+              firstName,
+              lastName
+          }
+      },
+      JWT_SECRET,
+      {
+          algorithm: 'HS256',
+          subject: username,
+          expiresIn: '7d'
+      }
+  );
 
-  // GET
     let res;
     return chai.request(app)
-      .get('/api/test/')
+      .get(`/api/pets/${username}`)
+      .set('authorization', `Bearer ${token}`)
       .then(function(_res) {
-        console.log((_res.body.pets).length);
-        // console.log(_res);
         res = _res;
+        // console.log(res);
         res.should.have.status(200);
         res.should.be.json;
         res.body.should.be.an('object');        
@@ -99,63 +120,144 @@ describe('Fit Pets API resource', function() {
       });
   });
 
+  it('should not retrieve pets of another user', function() {
+    const token = jwt.sign(
+      {
+          user: {
+              username,
+              firstName,
+              lastName
+          }
+      },
+      JWT_SECRET,
+      {
+          algorithm: 'HS256',
+          subject: username,
+          expiresIn: '7d'
+      }
+  );
+
+    let res;
+    return chai.request(app)
+      .get(`/api/pets/WRONG_USER`)
+      .set('authorization', `Bearer ${token}`)
+      .then(function(_res) {
+        res = _res;       
+        res.body.pets.length.should.be.equal(0);
+      });
+  });
+
   // POST
 
-    // it('should add a new pet on POST', function() {
-    //   const newPet = generatePets();
-    //   return chai.request(app)
-    //     .post('/api/test')
-    //     .send(newPet)
-    //     .then(function(res) {
-    //       res.should.have.status(201);
-    //       res.should.be.json;
-    //       res.body.should.be.a('object');
-    //       res.body.id.should.not.be.null;
-    //       res.body.id.should.not.be.undefined;
-    //       res.body.name.should.equal(newPet.name);
-    //       return Pet.findById(res.body.id);
-    //     })
-    //     .then(function(pet) {
-    //      pet.name.should.equal(newPet.name);
-    //      pet.type.should.equal(newPet.type);
-    //      pet.genre.should.equal(newPet.genre);
+      const token = jwt.sign(
+      {
+          user: {
+              username,
+              firstName,
+              lastName
+          }
+      },
+      JWT_SECRET,
+      {
+          algorithm: 'HS256',
+          subject: username,
+          expiresIn: '7d'
+      }
+  );
+    it('should add a new pet on POST', function() {
+      const newPet = generatePets(username);
+      console.log(newPet);
+      return chai.request(app)
+        .post('/api/pets')
+        .set('authorization', `Bearer ${token}`)
+        .send(newPet)
+        console.log(newPet)
+        .then(function(res) {
+          res.should.have.status(201);
+          res.should.be.json;
+          res.body.should.be.a('object');
+          res.body.id.should.not.be.null;
+          res.body.id.should.not.be.undefined;
+          res.body.name.should.equal(newPet.name);
+          return Pet.findById(res.body.id);
+        })
+        .then(function(pet) {
+         pet.name.should.equal(newPet.name);
+         pet.type.should.equal(newPet.type);
+         pet.genre.should.equal(newPet.genre);
          
-    //     })
-    // });
+        })
+    });
   
   // PUT
 
-  // it('should update items on PUT', function() {
-
-  //   const updateData = {
-  //     plays: {
-  //       date: faker.date.past(),
-  //       players: faker.random.number({min:1, max:99})
+  // it('should update a pets weight', function() {
+  //   const token = jwt.sign(
+  //     {
+  //         user: {
+  //             username,
+  //             firstName,
+  //             lastName
+  //         }
+  //     },
+  //     JWT_SECRET,
+  //     {
+  //         algorithm: 'HS256',
+  //         subject: username,
+  //         expiresIn: '7d'
   //     }
+  // );
+  //   const updateData = {
+  //     weight: randomWeight(),
+  //     // weightDate: moment.utc().format('l')
   //   };
-
+  //   let res;
   //   return chai.request(app)
-  //     .get('/api/board-games')
-  //     .then(function(res) {
-  //       updateData.id = res.body.boardGames[0].id;
+  //     .get(`/api/pets/${username}`)
+  //     .set('authorization', `Bearer ${token}`)
+  //     .then(function(_res) {
+  //       res = _res;       
+  //       petId = res.body.pets[0].id;
+  //       console.log(petId);
   //       return chai.request(app)
-  //         .put(`/api/board-games/${updateData.id}`)
+  //         .put(`/api/pets/weight/${res.body.pets[0].id}`)
+  //         .set('authorization', `Bearer ${token}`)
   //         .send(updateData);
   //     })
   //     .then(function(res) {
   //       res.should.have.status(204);
-  //       res.request._data.should.be.a('object');
-  //       res.request._data.should.deep.equal(updateData);
   //     });
   // });
 
   // DELETE 
   // it('should delete items on DELETE', function() {
+  //   const token = jwt.sign(
+  //     {
+  //         user: {
+  //             username,
+  //             firstName,
+  //             lastName
+  //         }
+  //     },
+  //     JWT_SECRET,
+  //     {
+  //         algorithm: 'HS256',
+  //         subject: username,
+  //         expiresIn: '7d'
+  //     }
+  // );
+  //   let res;
   //   return chai.request(app)
-  //     .get('/api/board-games')
-  //     .then(function(res) {
+  //     .get(`/api/pets/${username}`)
+  //     .set('authorization', `Bearer ${token}`)
+  //     .then(function(_res) {        
+  //       res = _res;
+  //       console.log(res.body);
+  //       petId = res.body.pets[0].id;
+  //       console.log(petId);   
   //       return chai.request(app)
-  //         .delete(`/api/board-games/${res.body.boardGames[0].id}`);
+  //         .delete(`/api/pets/${username}/${petId}`)
+  //         .set('authorization', `Bearer ${token}`);
   //     })
   //     .then(function(res) {
   //       res.should.have.status(204);
