@@ -8,7 +8,7 @@ const PetsSchema = mongoose.Schema({
     _owner : { 
         type: String, 
         ref: 'User',
-        required: true 
+        required: false 
     },
     name: {
         type: String,
@@ -36,7 +36,7 @@ const PetsSchema = mongoose.Schema({
 		},
 	foodBrand: {
 		type: String,
-		required: true
+		required: false
 	},
 	foodAmount: {
 		type: Number
