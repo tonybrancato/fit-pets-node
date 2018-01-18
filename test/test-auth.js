@@ -15,6 +15,7 @@ const expect = chai.expect;
 chai.use(chaiHttp);
 
 describe('Auth endpoints', function() {
+    
     const username = 'exampleUser';
     const password = 'examplePass';
     const firstName = 'Example';

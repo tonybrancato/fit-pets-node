@@ -14,23 +14,30 @@ const jsonParser = bodyParser.json();
 mongoose.Promise = global.Promise;
 
 // GET pets by owner
-router.get('/', (req, res) => {
-  Pet
-    .find()
-    .then(pets => {
-      res.json({
-        pets: pets.map(
-          (pet) => pet.apiRepr())
-      });
-    })
-    .catch(
-      err => {
-        console.error(err);
-        res.status(500).json({message: 'Internal server error'});
-    });
-});
+// router.get('/', (req, res) => {
+//   Pet
+//     .find()
+//     .then(pets => {
+//       res.json({
+//         pets: pets.map(
+//           (pet) => pet.apiRepr())
+//       });
+//     })
+//     .catch(
+//       err => {
+//         console.error(err);
+//         res.status(500).json({message: 'Internal server error'});
+//     });
+// });
 
 router.get('/:_owner', (req, res) => {
+  // if (req.params._owner !== req.body.id) {
+  //   const msg = (
+  //     `*****request path id (${req.params.id}) and request body id
+  //     (${req.body.id}) must match*****`);
+  //   // console.error(message + '-----req.body is ' + JSON.stringify(req.body.id));
+  //   res.status(400).json({message: msg});
+  // }
   Pet
     .find({'_owner' : req.params._owner})
     .then(pets => {
@@ -44,6 +51,7 @@ router.get('/:_owner', (req, res) => {
         res.status(500).json({message: 'Internal server error'})
     });
 });
+
 // POST
 router.post('/', jsonParser, (req, res) => {
   
@@ -94,6 +102,8 @@ router.put('/weight/:id', jsonParser, (req, res) => {
     if (field in req.body) {
       toUpdate[field] = req.body[field];
     }
+    console.log(`req.body = ${req.body} ++--++--++`);
+    console.log(toUpdate);
   });
  
   Pet
