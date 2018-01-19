@@ -29,7 +29,7 @@ app.use(cors());
 //         return res.send(204);
 //     }
 //     next();
-// });
+// }); 
 
 app.use(passport.initialize());
 passport.use(basicStrategy);
