@@ -1,4 +1,11 @@
 language: node_js
 node_js: node
 services:
-- mongodb     
+- mongodb
+deploy:
+  provider: heroku
+  api_key:
+    secure: WNrL7rR0oATx2lLFwdZzEmnk1erinl6yfxiT/P9MfRfk1Co1y+Dx94d28M/yeFrGNsZgIJ4l3JiDyH06hk685mu6EDfS9vWV1MAhMQGOVSVB8g5Nb+nRM5sB1uBfPbbB/lBBEpY/hhRaAyO93zqeOa8VoueOTNkfI8meGFIDsHa7y0CxSCwv9qP4s1ci5w5ASpBGIVKxBqmo5YlTB+Uj7hOSqc79nK4V306JTdeJO4r1XX4CvaJnPy19b0MIO2sHcmLAgtp7o3gsGJmJH6Yjr4ca0bK3YSAWP9cUtg9hURLJaJ/kfbmts1pI4F1LskGlaizmabqyvNZ5wBC6RvO1vt16b5FcYr+XozIKKhY8BS6VbW9I+7D7Hx7yzBBbV1ukrJ52Ko/K8gnMPU+eJeA7RZes1hh31Y/duK1Q2mebG2HRVFcg9GJ7yZbo0wsMe75H0yKB95ZoqaBkv51jhhRXaTdX5xmMSxB9HB0Jj1AoucO1Tjlf7Ds4s27s54aj/fcgBCmDN4OCubTdqQmURprqNe+O3Jmh2WGzMozZsstA05ffq60Rb/khOf2ulrysvE8Ex9u1Kkqju/CsjcY1nTJDL4wtS+l/viOCHUsRnijWhphhG0/FPfb47keAylNF6YB82armN/UWGMTspsCKc+dZJkw30QyP46wjdkTbwKDMlqA=
+  app: secure-lowlands-46029
+  on:
+    repo: tonybrancato/fit-pets-node
