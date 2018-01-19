@@ -19,7 +19,7 @@ const app = express();
 app.use(morgan('common'));
 
 // CORS
-app.options('*', cors())
+app.options('*', cors());
 app.use(cors());
 // app.use(function(req, res, next) {
 //     res.header('Access-Control-Allow-Origin', '*');
