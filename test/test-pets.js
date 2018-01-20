@@ -57,6 +57,11 @@ function generatePets(owner) {
     foodBrand: faker.commerce.productName(),
   }
 }
+const username = 'exampleUser';
+const password = 'examplePass';
+const firstName = 'Example';
+const lastName = 'User';
+const id = username;
 
 describe('Fit Pets API resource', function() {
   // create user and JWT to be used in pet creation
@@ -64,7 +69,6 @@ describe('Fit Pets API resource', function() {
   const password = 'examplePass';
   const firstName = 'Example';
   const lastName = 'User';
-
   before(function() {
     return runServer(TEST_DATABASE_URL);
   });
@@ -72,7 +76,7 @@ describe('Fit Pets API resource', function() {
   beforeEach(function() {
     return User.hashPassword(password)
       .then(password => User.create({username, password, firstName, lastName}))
-      .then(seedPetData(username))
+      .then(seedPetData(username));
   });
 
   afterEach(function() {
@@ -84,12 +88,14 @@ describe('Fit Pets API resource', function() {
   })
 
   it('should retrieve pets of a logged in user', function() {
+
     const token = jwt.sign(
       {
           user: {
               username,
               firstName,
-              lastName
+              lastName,
+              id
           }
       },
       JWT_SECRET,
@@ -106,7 +112,6 @@ describe('Fit Pets API resource', function() {
       .set('authorization', `Bearer ${token}`)
       .then(function(_res) {
         res = _res;
-        // console.log(res);
         res.should.have.status(200);
         res.should.be.json;
         res.body.should.be.an('object');        
@@ -120,13 +125,62 @@ describe('Fit Pets API resource', function() {
       });
   });
 
-  it('should not retrieve pets of another user', function() {
+  // POST
+
+    it('should add a new pet on POST', function() {
+      const token = jwt.sign(
+        {
+          user: {
+            username,
+            firstName,
+            lastName,
+            id
+          }
+        },
+        JWT_SECRET,
+        {
+          algorithm: 'HS256',
+          subject: username,
+          expiresIn: '7d'
+        }
+      );
+      const newPet = generatePets(username);
+      let res;
+      return chai.request(app)
+        .post('/api/pets')
+        .set('authorization', `Bearer ${token}`)
+        .send(newPet)
+        .then(function(_res) {
+          res = _res;
+          res.should.have.status(201);
+          res.should.be.json;
+          res.body.should.be.a('object');
+          res.body.id.should.not.be.null;
+          res.body.id.should.not.be.undefined;
+          res.body.name.should.equal(newPet.name);
+          return Pet.findById(res.body.id);
+        })
+        .then(function(pet) {
+         pet.name.should.equal(newPet.name);
+         pet.species.should.equal(newPet.species);
+         pet.sex.should.equal(newPet.sex);
+         pet.birthday.should.equal(newPet.birthday);
+         pet.weight[0].should.equal(newPet.weight[0]);
+         pet.weightDate[0].should.equal(newPet.weightDate[0]);
+         
+        })
+    });
+  
+  // PUT
+
+  it('should update a pets weight', function() {
     const token = jwt.sign(
       {
           user: {
               username,
               firstName,
-              lastName
+              lastName,
+              id
           }
       },
       JWT_SECRET,
@@ -139,22 +193,35 @@ describe('Fit Pets API resource', function() {
 
     let res;
     return chai.request(app)
-      .get(`/api/pets/WRONG_USER`)
+      .get(`/api/pets/${username}`)
       .set('authorization', `Bearer ${token}`)
       .then(function(_res) {
         res = _res;       
-        res.body.pets.length.should.be.equal(0);
+        petId = res.body.pets[0].id;
+        const updateData = {
+          weight: randomWeight(),
+          id: petId
+        };
+        return chai.request(app)
+          .put(`/api/pets/weight/${res.body.pets[0].id}`)
+          .set('authorization', `Bearer ${token}`)
+          .send(updateData)
+      })
+      .then(function(res2) {
+        res2.should.have.status(204);
       });
   });
 
-  // POST
-
-      const token = jwt.sign(
+  // DELETE 
+  
+  it('should delete items on DELETE', function() {
+    const token = jwt.sign(
       {
           user: {
               username,
               firstName,
-              lastName
+              lastName,
+              id
           }
       },
       JWT_SECRET,
@@ -164,103 +231,18 @@ describe('Fit Pets API resource', function() {
           expiresIn: '7d'
       }
   );
-    it('should add a new pet on POST', function() {
-      const newPet = generatePets(username);
-      console.log(newPet);
-      return chai.request(app)
-        .post('/api/pets')
-        .set('authorization', `Bearer ${token}`)
-        .send(newPet)
-        console.log(newPet)
-        .then(function(res) {
-          res.should.have.status(201);
-          res.should.be.json;
-          res.body.should.be.a('object');
-          res.body.id.should.not.be.null;
-          res.body.id.should.not.be.undefined;
-          res.body.name.should.equal(newPet.name);
-          return Pet.findById(res.body.id);
-        })
-        .then(function(pet) {
-         pet.name.should.equal(newPet.name);
-         pet.type.should.equal(newPet.type);
-         pet.genre.should.equal(newPet.genre);
-         
-        })
-    });
-  
-  // PUT
-
-  // it('should update a pets weight', function() {
-  //   const token = jwt.sign(
-  //     {
-  //         user: {
-  //             username,
-  //             firstName,
-  //             lastName
-  //         }
-  //     },
-  //     JWT_SECRET,
-  //     {
-  //         algorithm: 'HS256',
-  //         subject: username,
-  //         expiresIn: '7d'
-  //     }
-  // );
-  //   const updateData = {
-  //     weight: randomWeight(),
-  //     // weightDate: moment.utc().format('l')
-  //   };
-  //   let res;
-  //   return chai.request(app)
-  //     .get(`/api/pets/${username}`)
-  //     .set('authorization', `Bearer ${token}`)
-  //     .then(function(_res) {
-  //       res = _res;       
-  //       petId = res.body.pets[0].id;
-  //       console.log(petId);
-  //       return chai.request(app)
-  //         .put(`/api/pets/weight/${res.body.pets[0].id}`)
-  //         .set('authorization', `Bearer ${token}`)
-  //         .send(updateData);
-  //     })
-  //     .then(function(res) {
-  //       res.should.have.status(204);
-  //     });
-  // });
-
-  // DELETE 
-  // it('should delete items on DELETE', function() {
-  //   const token = jwt.sign(
-  //     {
-  //         user: {
-  //             username,
-  //             firstName,
-  //             lastName
-  //         }
-  //     },
-  //     JWT_SECRET,
-  //     {
-  //         algorithm: 'HS256',
-  //         subject: username,
-  //         expiresIn: '7d'
-  //     }
-  // );
-  //   let res;
-  //   return chai.request(app)
-  //     .get(`/api/pets/${username}`)
-  //     .set('authorization', `Bearer ${token}`)
-  //     .then(function(_res) {        
-  //       res = _res;
-  //       console.log(res.body);
-  //       petId = res.body.pets[0].id;
-  //       console.log(petId);   
-  //       return chai.request(app)
-  //         .delete(`/api/pets/${username}/${petId}`)
-  //         .set('authorization', `Bearer ${token}`);
-  //     })
-  //     .then(function(res) {
-  //       res.should.have.status(204);
-  //     });
-  // });
+    let res;
+    return chai.request(app)
+      .get(`/api/pets/${username}`)
+      .set('authorization', `Bearer ${token}`)
+      .then(function(_res) {        
+        res = _res;
+        return chai.request(app)
+          .delete(`/api/pets/${username}/${petId}`)
+          .set('authorization', `Bearer ${token}`)
+      })
+      .then(function(res) {
+        res.should.have.status(204);
+      });
+  });
 });

@@ -110,6 +110,7 @@ PetsSchema.methods.apiRepr = function() {
 		weightDate: this.weightDate,
 		startingWeight: this.startingWeight,
 		foodBrand: this.foodBrand,
+		owner: this._owner
 	};
 };
 

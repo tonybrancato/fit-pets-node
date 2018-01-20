@@ -14,34 +14,17 @@ const jsonParser = bodyParser.json();
 mongoose.Promise = global.Promise;
 
 // GET pets by owner
-// router.get('/', (req, res) => {
-//   Pet
-//     .find()
-//     .then(pets => {
-//       res.json({
-//         pets: pets.map(
-//           (pet) => pet.apiRepr())
-//       });
-//     })
-//     .catch(
-//       err => {
-//         console.error(err);
-//         res.status(500).json({message: 'Internal server error'});
-//     });
-// });
+
 
 router.get('/:_owner', (req, res) => {
-  // if (req.params._owner !== req.body.id) {
-  //   const msg = (
-  //     `*****request path id (${req.params.id}) and request body id
-  //     (${req.body.id}) must match*****`);
-  //   // console.error(message + '-----req.body is ' + JSON.stringify(req.body.id));
-  //   res.status(400).json({message: msg});
-  // }
+  if (req.params._owner !== req.user.id) {
+    const message = ('Unauthorized access');
+    res.status(401).json({message: message});
+  }
   Pet
     .find({'_owner' : req.params._owner})
     .then(pets => {
-      res.json({
+      res.json({        
         pets: pets.map(
           (pet) => pet.apiRepr()) 
       });
@@ -54,34 +37,24 @@ router.get('/:_owner', (req, res) => {
 
 // POST
 router.post('/', jsonParser, (req, res) => {
-  
-//   const requiredFields = ['name'];
-//   for (let i=0; i<requiredFields.length; i++) {
-//     const field = requiredFields[i];
-//     if (!(field in req.body)) {
-//       const message = `Missing \`${field}\` in request body`
-//       console.error(message);
-//       return res.status(400).send(message);
-//     }
-// }
 
-Pet
-  .create({
-    _owner: req.user.id,
-    name: req.body.name,
-    species: req.body.species,
-    sex: req.body.sex,
-    birthday: req.body.birthday,
-    weight: req.body.weight,
-    weightDate: moment.utc().format('l'),
-    foodBrand: req.body.food
-  })
-  .then(
-    pet => res.status(201).json(pet.apiRepr()))
-  .catch(err => {
-    console.error(err);
-    res.status(500).json({message: 'Internal server error'});
-  });
+  Pet
+    .create({
+      _owner: req.user.id,
+      name: req.body.name,
+      species: req.body.species,
+      sex: req.body.sex,
+      birthday: req.body.birthday,
+      weight: req.body.weight,
+      weightDate: moment.utc().format('L'),
+      foodBrand: req.body.food
+    })
+    .then(
+      pet => res.status(201).json(pet.apiRepr()))
+    .catch(err => {
+      console.error(err);
+      res.status(500).json({message: 'Internal server error'});
+    });
 });
 
 // PUT *make sure that the pet id belongs to the user
@@ -89,11 +62,11 @@ Pet
 // Weight update
 router.put('/weight/:id', jsonParser, (req, res) => {
   if (req.params.id !== req.body.id) {
-    const msg = (
+    const message = (
       `*****request path id (${req.params.id}) and request body id
       (${req.body.id}) must match*****`);
-    // console.error(message + '-----req.body is ' + JSON.stringify(req.body.id));
-    res.status(400).json({message: msg});
+    console.error(message + '-----req.body is ' + JSON.stringify(req.body.id));
+    res.status(400).json({message: message});
   }
   
   const toUpdate = {};
@@ -102,8 +75,6 @@ router.put('/weight/:id', jsonParser, (req, res) => {
     if (field in req.body) {
       toUpdate[field] = req.body[field];
     }
-    console.log(`req.body = ${req.body} ++--++--++`);
-    console.log(toUpdate);
   });
  
   Pet

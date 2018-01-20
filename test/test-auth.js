@@ -109,6 +109,7 @@ describe('Auth endpoints', function() {
                         algorithm: ['HS256']
                     });
                     const id = payload.user.id
+                    console.log(id);
                     expect(payload.user).to.deep.equal({
                         id,
                         username,
