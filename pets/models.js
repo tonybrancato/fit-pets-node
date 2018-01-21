@@ -33,14 +33,7 @@ const PetsSchema = mongoose.Schema({
     weightDate: {
         type: Array,
         required: true
-		},
-	foodBrand: {
-		type: String,
-		required: false
-	},
-	foodAmount: {
-		type: Number
-	}
+		}
 });
 
 PetsSchema.virtual('capitalName').get(function() {
@@ -109,7 +102,6 @@ PetsSchema.methods.apiRepr = function() {
 		weight: this.weight,
 		weightDate: this.weightDate,
 		startingWeight: this.startingWeight,
-		foodBrand: this.foodBrand,
 		owner: this._owner
 	};
 };

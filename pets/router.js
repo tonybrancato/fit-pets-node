@@ -47,7 +47,6 @@ router.post('/', jsonParser, (req, res) => {
       birthday: req.body.birthday,
       weight: req.body.weight,
       weightDate: moment.utc().format('L'),
-      foodBrand: req.body.food
     })
     .then(
       pet => res.status(201).json(pet.apiRepr()))
