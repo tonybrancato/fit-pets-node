@@ -117,7 +117,7 @@ describe('Fit Pets API resource', function() {
         res.body.should.be.an('object');        
         res.body.pets.length.should.be.at.least(1);
         const expectedKeys = ['name', 'species', 'sex', 'birthday', 'age', 'id', 
-                              'weight', 'startingWeight', 'weightDate', 'foodBrand'];
+                              'weight', 'startingWeight', 'weightDate'];
         res.body.pets.forEach(function(item) {
           item.should.be.a('object');
           item.should.include.keys(expectedKeys);
