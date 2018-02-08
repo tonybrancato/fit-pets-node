@@ -52,8 +52,10 @@ function generatePets(owner) {
     species: pickOneOfThese('Cat', 'Dog'),
     sex: pickOneOfThese('Male', 'Female'),
     birthday: moment.utc().format('L'),
-    weight: [randomWeight()],
-    weightDate: [moment.utc().format('L')],
+    weights: [{
+      weight: randomWeight(),
+      weightDate: moment.utc().format('L')
+    }],
     foodBrand: faker.commerce.productName(),
   }
 }
@@ -117,7 +119,7 @@ describe('Fit Pets API resource', function() {
         res.body.should.be.an('object');        
         res.body.pets.length.should.be.at.least(1);
         const expectedKeys = ['name', 'species', 'sex', 'birthday', 'age', 'id', 
-                              'weight', 'startingWeight', 'weightDate'];
+                              'weights', 'owner'];
         res.body.pets.forEach(function(item) {
           item.should.be.a('object');
           item.should.include.keys(expectedKeys);
@@ -161,13 +163,12 @@ describe('Fit Pets API resource', function() {
           return Pet.findById(res.body.id);
         })
         .then(function(pet) {
+          console.log(pet);
+          console.log(newPet);
          pet.name.should.equal(newPet.name);
          pet.species.should.equal(newPet.species);
          pet.sex.should.equal(newPet.sex);
          pet.birthday.should.equal(newPet.birthday);
-         pet.weight[0].should.equal(newPet.weight[0]);
-         pet.weightDate[0].should.equal(newPet.weightDate[0]);
-         
         })
     });
   
