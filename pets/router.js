@@ -45,8 +45,11 @@ router.post('/', jsonParser, (req, res) => {
       species: req.body.species,
       sex: req.body.sex,
       birthday: req.body.birthday,
-      weight: req.body.weight,
-      weightDate: moment.utc().format('L'),
+      weights: 
+        {
+          weight:req.body.weight,
+          weightDate: moment.utc().format('L')
+        },
     })
     .then(
       pet => res.status(201).json(pet.apiRepr()))
@@ -69,7 +72,7 @@ router.put('/weight/:id', jsonParser, (req, res) => {
   }
   
   const toUpdate = {};
-  const updatableFields = ['weight', 'weightDate'];
+  const updatableFields = ['weights'];
   updatableFields.forEach(field => {
     if (field in req.body) {
       toUpdate[field] = req.body[field];
@@ -78,7 +81,7 @@ router.put('/weight/:id', jsonParser, (req, res) => {
  
   Pet
     .findOneAndUpdate({'_id':req.params.id, '_owner':req.user.id}, {$push: toUpdate})     
-    .findOneAndUpdate({'_id':req.params.id, '_owner':req.user.id}, {$push: {weightDate: moment.utc().format('L')}})
+    // .findOneAndUpdate({'_id':req.params.id, '_owner':req.user.id}, {$push: {weightDate: moment.utc().format('L')}})
     .then(pet => res.status(204).end())
     .catch(err => res.status(500).json({message: 'Internal server error'}));
  });
