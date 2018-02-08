@@ -26,14 +26,11 @@ const PetsSchema = mongoose.Schema({
         type: String, 
         required: true
     },
-	weight: {
-		type: Array,
-		required: true
-	},
-    weightDate: {
-        type: Array,
-        required: true
-		}
+	weights: [{
+		weight: String,
+		weightDate: String,
+	  }],
+
 });
 
 PetsSchema.virtual('capitalName').get(function() {
@@ -99,9 +96,7 @@ PetsSchema.methods.apiRepr = function() {
 		birthday: this.birthday || '',
 		age: this.age,
 		id: this._id,
-		weight: this.weight,
-		weightDate: this.weightDate,
-		startingWeight: this.startingWeight,
+		weights: this.weights,
 		owner: this._owner
 	};
 };
